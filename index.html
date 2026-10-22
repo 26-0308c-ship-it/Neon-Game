@@ -1,0 +1,412 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ultimate Mini Arcade</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@400;600;800&display=swap');
+:root{--bg:#0b1025;--panel:#151d39;--cyan:#52f5ff;--pink:#ff58d6;--yellow:#ffe66b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#34236b,var(--bg) 65%);color:white;font-family:Poppins,sans-serif;min-height:100vh;padding:16px}
+header{text-align:center;padding:25px 0}
+h1{font:900 clamp(2rem,7vw,4rem) Orbitron,sans-serif;margin:0;background:linear-gradient(90deg,var(--cyan),white,var(--pink));background-clip:text;color:transparent}
+header p{color:#c5c6e7}
+.app{max-width:1000px;margin:auto}
+.layout{display:grid;grid-template-columns:245px 1fr;gap:15px}
+.panel{background:#151d39ed;border:1px solid #ffffff20;border-radius:19px;padding:17px;box-shadow:0 12px 35px #0003}
+h2{font-size:1rem;color:var(--cyan);margin:0 0 14px}
+.menu{display:grid;gap:8px}
+.menu button,.btn{border:1px solid #ffffff22;border-radius:12px;padding:12px;background:#ffffff08;color:white;font:600 .86rem Poppins,sans-serif;cursor:pointer}
+.menu button{text-align:left}
+.menu button:hover,.menu button.active{border-color:var(--cyan);background:#24405a}
+button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:linear-gradient(90deg,var(--cyan),#b2ffd6);color:#10152d;border:0;font-weight:800}
+.btn.pink{background:linear-gradient(90deg,var(--pink),#ffb0a0);color:#24112e;border:0;font-weight:800}
+.game-title{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{background:#ffffff0b;border:1px solid #ffffff20;border-radius:30px;padding:6px 10px;color:var(--yellow);font-size:.78rem}
+#gameArea{min-height:350px;margin-top:15px;padding:15px;background:#0d1430;border:1px solid #ffffff18;border-radius:15px;text-align:center}
+#gameArea h3{color:var(--yellow);font-size:1.3rem}
+#gameArea p{color:#c6c9e6;line-height:1.7}
+button.game-btn{border:1px solid #ffffff28;border-radius:13px;background:#273258;color:white;padding:15px;cursor:pointer;font-size:1.2rem;min-height:60px}
+button.game-btn:hover{border-color:var(--cyan);background:#354677}
+input{width:100%;max-width:300px;padding:12px;border:1px solid #ffffff40;background:#090e22;color:white;border-radius:10px;font:inherit;margin:6px}
+#result{color:var(--yellow);font-weight:800;min-height:28px;margin-top:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px}
+.stat{background:#ffffff08;border-radius:12px;padding:12px 3px;text-align:center}
+.stat small{display:block;color:#aeb6d9;font-size:.68rem}
+.stat strong{display:block;margin-top:5px;font:700 1.1rem Orbitron,sans-serif}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:420px;margin:20px auto}
+.tiles .game-btn{font-size:1.6rem;padding:5px;min-height:65px}
+.moles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:420px;margin:20px auto}
+.moles .game-btn{font-size:2rem;min-height:75px}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:300px;margin:20px auto}
+.board .game-btn{font-size:2rem;min-height:75px}
+#snakeCanvas{width:min(100%,360px);height:auto;border:2px solid var(--cyan);border-radius:10px;background:#071222;touch-action:none}
+.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+footer{text-align:center;color:#8f9bbd;font-size:.8rem;margin:20px}
+@media(max-width:700px){body{padding:8px}.layout{grid-template-columns:1fr}.menu{grid-template-columns:repeat(2,minmax(0,1fr))}.menu button{font-size:.75rem;padding:10px}.panel{padding:12px}#gameArea{padding:10px}.tiles{gap:5px}.tiles .game-btn{min-height:55px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<h1>🎮 MINI ARCADE</h1>
+<p>9 GAMES • ONE ARCADE • UNLIMITED FUN</p>
+</header>
+
+<div class="layout">
+<aside class="panel">
+<h2>🕹️ SELECT A GAME</h2>
+<div class="menu" id="menu">
+<button data-game="mole">🔨 Whack-a-Mole</button>
+<button data-game="memory">🧠 Memory Match</button>
+<button data-game="ttt">❌ Tic-Tac-Toe</button>
+<button data-game="snake">🐍 Snake</button>
+<button data-game="reaction">⚡ Reaction Test</button>
+<button data-game="rps">✊ Rock Paper Scissors</button>
+<button data-game="guess">🔢 Number Guess</button>
+<button data-game="dice">🎲 Dice Battle</button>
+<button data-game="typing">⌨️ Typing Speed</button>
+</div>
+<div class="stats">
+<div class="stat"><small>⭐ POINTS</small><strong id="points">0</strong></div>
+<div class="stat"><small>🏆 BEST</small><strong id="best">0</strong></div>
+<div class="stat"><small>🎯 WINS</small><strong id="wins">0</strong></div>
+</div>
+</aside>
+
+<main class="panel">
+<div class="game-title">
+<h2 id="gameTitle">🔨 WHACK-A-MOLE</h2>
+<span class="badge" id="gameStatus">READY</span>
+</div>
+<div id="gameArea">
+<h3>Welcome to Mini Arcade!</h3>
+<p>Select a game from the menu to begin your adventure.</p>
+</div>
+<div id="result" role="status" aria-live="polite"></div>
+<div class="controls">
+<button class="btn primary" id="restart">▶ START / RESTART</button>
+<button class="btn" id="resetScore">↻ RESET SCORE</button>
+</div>
+</main>
+</div>
+<footer>Made for kids, teens, and adults • HTML + CSS + JavaScript</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const area=$("gameArea");
+let current="mole",points=0,wins=0,round=0,timer=null,interval=null;
+let best={},game={},snakeLoop=null,started=false;
+const names={
+mole:"🔨 WHACK-A-MOLE",memory:"🧠 MEMORY MATCH",
+ttt:"❌ TIC-TAC-TOE",snake:"🐍 SNAKE",
+reaction:"⚡ REACTION TEST",rps:"✊ ROCK PAPER SCISSORS",
+guess:"🔢 NUMBER GUESS",dice:"🎲 DICE BATTLE",typing:"⌨️ TYPING SPEED"
+};
+try{
+points=Number(localStorage.getItem("miniArcadePoints"))||0;
+best=JSON.parse(localStorage.getItem("miniArcadeBest")||"{}");
+wins=Number(localStorage.getItem("miniArcadeWins"))||0;
+}catch(e){}
+function save(){
+try{
+localStorage.setItem("miniArcadePoints",points);
+localStorage.setItem("miniArcadeBest",JSON.stringify(best));
+localStorage.setItem("miniArcadeWins",wins);
+}catch(e){}
+}
+function update(){
+$("points").textContent=points;
+$("wins").textContent=wins;
+$("best").textContent=best[current]||0;
+}
+function award(n){
+points=Math.max(0,points+n);
+if(n>0)wins++;
+best[current]=Math.max(best[current]||0,points);
+save();update();
+}
+function stop(){
+clearTimeout(timer);clearInterval(interval);clearInterval(snakeLoop);
+timer=interval=snakeLoop=null;round++;started=false;
+}
+function say(text){$("result").textContent=text}
+function status(text){$("gameStatus").textContent=text}
+function button(text,fn,cls="game-btn"){
+const b=document.createElement("button");
+b.className=cls;b.textContent=text;b.onclick=fn;return b;
+}
+function el(tag,text,cls){
+const x=document.createElement(tag);x.textContent=text;
+if(cls)x.className=cls;return x;
+}
+function setup(id){
+stop();current=id;game={};$("gameTitle").textContent=names[id];
+$("result").textContent="";status("READY");update();
+document.querySelectorAll("[data-game]").forEach(b=>b.classList.toggle("active",b.dataset.game===id));
+area.innerHTML="";
+const intro=el("p",{
+mole:"Hit the moles! You have 20 seconds.",
+memory:"Flip the cards and match every pair.",
+ttt:"Get three in a row. Play against a friend.",
+snake:"Eat apples. Don't hit the walls or yourself.",
+reaction:"Wait for green, then click as quickly as possible.",
+rps:"Choose rock, paper, or scissors. First to 5 wins!",
+guess:"Guess the secret number between 1 and 100.",
+dice:"Roll two dice. Highest total wins the round!",
+typing:"Type the displayed sentence as quickly as you can."
+}[id]);
+area.appendChild(intro);
+if(id==="mole")initMole();
+if(id==="memory")initMemory();
+if(id==="ttt")initTTT();
+if(id==="snake")initSnake();
+if(id==="reaction")initReaction();
+if(id==="rps")initRPS();
+if(id==="guess")initGuess();
+if(id==="dice")initDice();
+if(id==="typing")initTyping();
+}
+function initMole(){
+const grid=el("div","","moles");area.appendChild(grid);
+const score=el("h3","Hits: 0");area.appendChild(score);
+let hits=0,active=-1,playing=false;
+const cells=[];
+for(let i=0;i<9;i++){
+const b=button("🕳️",()=>{
+if(!playing)return;
+if(i===active){hits++;score.textContent="Hits: "+hits;award(2);say("BONK! +2 points!");b.textContent="💥";active=-1;}
+else say("Missed! Watch for the mole.");
+});
+cells.push(b);grid.appendChild(b);
+}
+function pop(){
+if(!playing)return;
+cells.forEach(b=>b.textContent="🕳️");
+active=Math.floor(Math.random()*9);
+cells[active].textContent="🐹";
+}
+game.start=()=>{
+hits=0;score.textContent="Hits: 0";playing=true;started=true;
+status("20 SECONDS");say("GO! GO! GO!");
+pop();interval=setInterval(pop,650);
+timer=setTimeout(()=>{playing=false;clearInterval(interval);cells.forEach(b=>b.textContent="🕳️");status("FINISHED");say("Time's up! You hit "+hits+" moles!");},20000);
+};
+}
+function initMemory(){
+const icons=["🐶","🐱","🦊","🐸","🐼","🦄","🐵","🐯"];
+let cards=[],first=null,lock=false,matches=0,moves=0;
+const grid=el("div","","tiles");area.appendChild(grid);
+const info=el("h3","Pairs: 0/8 • Moves: 0");area.appendChild(info);
+game.start=()=>{
+cards=[...icons,...icons].sort(()=>Math.random()-.5);
+first=null;lock=false;matches=0;moves=0;grid.innerHTML="";
+info.textContent="Pairs: 0/8 • Moves: 0";
+cards.forEach((icon,i)=>{
+const b=button("❔",()=>{
+if(lock||b.dataset.open==="1")return;
+b.textContent=icon;b.dataset.open="1";
+if(first===null){first={b,icon};return}
+moves++;info.textContent=`Pairs: ${matches}/8 • Moves: ${moves}`;
+if(first.icon===icon){
+matches++;first=null;info.textContent=`Pairs: ${matches}/8 • Moves: ${moves}`;
+award(5);
+if(matches===8){say("🎉 YOU FOUND EVERY PAIR!");status("YOU WIN!");}
+}else{
+lock=true;const old=first.b;first=null;
+setTimeout(()=>{old.textContent="❔";b.textContent="❔";delete old.dataset.open;delete b.dataset.open;lock=false;},650);
+}
+});
+grid.appendChild(b);
+});
+say("Find all 8 matching pairs!");
+};
+game.start();
+}
+function initTTT(){
+const grid=el("div","","board");area.appendChild(grid);
+let cells=[],turn="X",over=false;
+const info=el("h3","Your turn: X");area.appendChild(info);
+function check(){
+const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+for(const line of lines)if(cells[line[0]]&&cells[line[0]]===cells[line[1]]&&cells[line[1]]===cells[line[2]])return cells[line[0]];
+return cells.every(Boolean)?"draw":null;
+}
+function reset(){
+cells=Array(9).fill("");turn="X";over=false;grid.innerHTML="";
+info.textContent="Your turn: X";say("Two players, one device!");
+cells.forEach((_,i)=>{
+const b=button(" ",()=>{
+if(over||cells[i])return;
+cells[i]=turn;b.textContent=turn;
+const result=check();
+if(result){
+over=true;
+if(result==="draw"){info.textContent="It's a draw!";say("Good game!");}
+else{info.textContent=result+" wins!";say("🎉 "+result+" wins!");if(result==="X")award(10);}
+return;
+}
+turn=turn==="X"?"O":"X";info.textContent="Your turn: "+turn;
+});
+grid.appendChild(b);
+});
+}
+game.start=reset;reset();
+}
+function initSnake(){
+const canvas=document.createElement("canvas");
+canvas.id="snakeCanvas";canvas.width=320;canvas.height=320;
+area.appendChild(canvas);
+const info=el("h3","Use arrow keys or buttons to move.");area.appendChild(info);
+const controls=el("div","","controls");area.appendChild(controls);
+let snake,dir,food,alive,score;
+const ctx=canvas.getContext("2d"),size=16;
+function draw(){
+ctx.fillStyle="#071222";ctx.fillRect(0,0,320,320);
+ctx.fillStyle="#52f5ff";
+snake.forEach((p,i)=>{ctx.fillStyle=i?"#29bda9":"#b1fff0";ctx.fillRect(p.x*size+1,p.y*size+1,size-2,size-2)});
+ctx.fillStyle="#ff58d6";ctx.fillRect(food.x*size+2,food.y*size+2,size-4,size-4);
+info.textContent="Apples: "+score+" • "+(alive?"Playing":"Game over");
+}
+function placeFood(){food={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*20)};}
+function move(d){if(!alive)return;if(d.x!==-dir.x||d.y!==-dir.y)dir=d;}
+function step(){
+if(!alive)return;
+const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+if(head.x<0||head.y<0||head.x>=20||head.y>=20||snake.some(p=>p.x===head.x&&p.y===head.y)){
+alive=false;clearInterval(snakeLoop);status("GAME OVER");say("Snake game over! Apples: "+score);return;
+}
+snake.unshift(head);
+if(head.x===food.x&&head.y===food.y){score++;award(5);placeFood();}
+else snake.pop();
+draw();
+}
+function startSnake(){
+clearInterval(snakeLoop);snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+dir={x:1,y:0};score=0;alive=true;placeFood();status("PLAYING");draw();
+snakeLoop=setInterval(step,130);
+}
+const dirs=[["⬆️",{x:0,y:-1}],["⬅️",{x:-1,y:0}],["⬇️",{x:0,y:1}],["➡️",{x:1,y:0}]];
+dirs.forEach(([t,d])=>controls.appendChild(button(t,()=>move(d),"btn")));
+game.start=startSnake;
+game.start();
+}
+document.addEventListener("keydown",e=>{
+if(current!=="snake"||!started)return;
+const dirs={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}};
+if(dirs[e.key]){e.preventDefault();if(game.move)game.move(dirs[e.key]);}
+});
+function initReaction(){
+const b=button("WAIT FOR GREEN...",()=>{}, "game-btn");
+b.style.width="100%";b.style.minHeight="150px";b.style.fontSize="1.3rem";area.appendChild(b);
+let ready=false,goTime=0;
+game.start=()=>{
+ready=false;b.disabled=false;b.textContent="WAIT FOR GREEN...";
+b.style.background="#7a293b";status("WAIT");say("Don't click too early!");
+const id=round;
+timer=setTimeout(()=>{
+if(id!==round)return;
+ready=true;goTime=performance.now();b.textContent="🟢 CLICK NOW!";
+b.style.background="#087b58";status("GO!");
+},1500+Math.random()*3000);
+b.onclick=()=>{
+if(!started)return;
+if(!ready){clearTimeout(timer);b.textContent="TOO EARLY!";status("FALSE START");say("Wait until green! Press restart to try again.");return;}
+const ms=Math.round(performance.now()-goTime);
+b.disabled=true;b.textContent=ms+" ms";
+say(ms<250?"⚡ INCREDIBLE REFLEXES!":ms<400?"Great reaction!":"Nice! Try to beat your time.");
+award(Math.max(1,Math.round(1000/ms)));status("DONE");
+};
+started=true;
+};
+}
+function initRPS(){
+const out=el("h3","First to 5 wins");area.appendChild(out);
+const choices=el("div","","controls");area.appendChild(choices);
+let you=0,pc=0;
+function play(c){
+if(you>=5||pc>=5)return;
+const list=["Rock","Paper","Scissors"],cpu=list[Math.floor(Math.random()*3)];
+let result=c===cpu?"Draw!":((c==="Rock"&&cpu==="Scissors")||(c==="Paper"&&cpu==="Rock")||(c==="Scissors"&&cpu==="Paper"))?"You win!":"Computer wins!";
+if(result==="You win!")you++;
+if(result==="Computer wins!")pc++;
+out.textContent=`You ${you} — ${pc} Computer`;
+say(`${c} vs ${cpu}. ${result}`);
+if(result==="You win!")award(5);
+if(you>=5||pc>=5){say(you>=5?"🏆 YOU WON THE DUEL!":"Computer won! Try again.");status("FINISHED");}
+}
+["✊ Rock","✋ Paper","✌️ Scissors"].forEach((s,i)=>choices.appendChild(button(s,()=>play(["Rock","Paper","Scissors"][i]),"btn")));
+game.start=()=>{you=pc=0;out.textContent="You 0 — 0 Computer";say("Choose your move!");status("PLAYING");};
+game.start();
+}
+function initGuess(){
+const h=el("h3","Guess a number from 1 to 100");area.appendChild(h);
+const input=document.createElement("input");input.type="number";input.min=1;input.max=100;input.placeholder="Enter your guess";area.appendChild(input);
+const go=button("GUESS!",check,"btn primary");area.appendChild(go);
+const info=el("p","Attempts: 0");area.appendChild(info);
+let secret=0,attempts=0,done=false;
+function reset(){secret=1+Math.floor(Math.random()*100);attempts=0;done=false;input.value="";info.textContent="Attempts: 0";go.disabled=false;say("Make your first guess!");}
+function check(){
+if(done)return;
+const n=Number(input.value);
+if(!Number.isInteger(n)||n<1||n>100){say("Enter a whole number from 1 to 100.");return;}
+attempts++;info.textContent="Attempts: "+attempts;
+if(n===secret){done=true;go.disabled=true;award(Math.max(5,100-attempts*5));say("🎉 Correct! You found "+secret+" in "+attempts+" tries!");status("WIN");}
+else say(n<secret?"📈 TOO LOW! Guess higher.":"📉 TOO HIGH! Guess lower.");
+}
+input.addEventListener("keydown",e=>{if(e.key==="Enter")check()});
+game.start=reset;reset();
+}
+function initDice(){
+const h=el("h3","Roll against the computer!");area.appendChild(h);
+const face=el("h3","🎲 🎲");face.style.fontSize="3rem";area.appendChild(face);
+const b=button("🎲 ROLL DICE",roll,"btn primary");area.appendChild(b);
+let rounds=0;
+function roll(){
+const a=1+Math.floor(Math.random()*6),c=1+Math.floor(Math.random()*6);
+face.textContent=`${["⚀","⚁","⚂","⚃","⚄","⚅"][a-1]}  vs  ${["⚀","⚁","⚂","⚃","⚄","⚅"][c-1]}`;
+rounds++;
+say(a>c?"🎉 You win this round!":a===c?"It's a tie!":"Computer wins this round!");
+if(a>c)award(5);status("ROUND "+rounds);
+}
+game.start=()=>{rounds=0;face.textContent="🎲 🎲";say("Roll the dice!");status("READY");};
+}
+function initTyping(){
+const words=["The quick brown fox jumps over the lazy dog.","Gaming is fun for everyone.","Practice makes you faster and smarter.","A little challenge makes every day exciting."];
+const phrase=words[Math.floor(Math.random()*words.length)];
+const p=el("h3",phrase);area.appendChild(p);
+const input=document.createElement("input");input.placeholder="Type the sentence here";area.appendChild(input);
+const info=el("p","Time: 0 seconds");area.appendChild(info);
+let startTime=0,done=false;
+input.addEventListener("input",()=>{
+if(done)return;
+if(!startTime)startTime=performance.now();
+if(input.value===phrase){
+done=true;const seconds=(performance.now()-startTime)/1000;
+const wpm=Math.round((phrase.split(" ").length/seconds)*60);
+info.textContent=`Finished in ${seconds.toFixed(1)} seconds • ${wpm} WPM`;
+say("⌨️ Typing complete! "+wpm+" words per minute.");
+award(Math.max(1,wpm));status("FINISHED");
+}
+});
+game.start=()=>{input.value="";input.disabled=false;done=false;startTime=0;info.textContent="Start typing!";say("Type the sentence exactly.");input.focus();};
+game.start();
+}
+$("menu").addEventListener("click",e=>{
+const b=e.target.closest("[data-game]");if(b)setup(b.dataset.game);
+});
+$("restart").addEventListener("click",()=>{if(game.start)game.start();});
+$("resetScore").addEventListener("click",()=>{
+if(confirm("Reset your total points, wins, and saved records?")){
+points=0;wins=0;best={};save();update();say("Scores reset!");
+}
+});
+setup("mole");
+</script>
+</body>
+</html>
